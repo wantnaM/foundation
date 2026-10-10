@@ -2,6 +2,8 @@
 
 基于 Next.js App Router、React、TypeScript、Tailwind CSS、shadcn/ui（Radix）和 Lucide。仅包含通用工程框架与 UI 示例，没有业务模块。
 
+访问 `/` 跳转到 `/app`，`/app` 默认进入 `/app/dashboard`，智能体展示页位于 `/app/agent`。两页通过 `app/(workspace)/app/layout.tsx` 共用工作区布局，切换时保留侧栏状态。主导航包含 Dashboard、智能体；底部恢复 Settings、Get Help、Search 和示例用户菜单，账户等入口保持模板占位，未接入认证或业务服务。智能体页支持搜索、分类、排序、当前页面收藏与浏览记录，卡片打开能力说明；模型生成尚未接入。智能体展示数据位于 `config/agents.ts`，共享侧栏位于 `components/layout/workspace-sidebar.tsx`。
+
 ## 开始使用
 
 环境：Node.js >=22.19.0，pnpm 10。
@@ -28,10 +30,15 @@ pnpm start
 ```text
 app/                 页面、布局、加载/错误/404、API 路由
   api/health/        通用健康检查
-  components/        UI 示例页面（URL：/components）
+  page.tsx           首页跳转到 /app
+  (workspace)/       工作区路由组（不影响 URL）
+    app/             /app 工作区父路由
+      layout.tsx     共享侧栏和右侧内容容器
+      page.tsx       默认跳转到 /app/dashboard
+      dashboard/     Dashboard 模板页面（URL：/app/dashboard）
+      agent/         智能体展示页面（URL：/app/agent）
 components/
   layout/            公共页面框架
-  examples/          可移除的组件交互示例
   ui/                shadcn/ui 组件源码
 config/              应用名称和导航等公共配置
 hooks/               预留自定义 React Hooks
