@@ -1,0 +1,5 @@
+node_modules
+.next
+pnpm-lock.yaml
+next-env.d.ts
+文档/01-项目架构与搭建方案.md
