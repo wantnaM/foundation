@@ -2,7 +2,9 @@
 
 基于 Next.js App Router、React、TypeScript、Tailwind CSS、shadcn/ui（Radix）和 Lucide。仅包含通用工程框架与 UI 示例，没有业务模块。
 
-访问 `/` 跳转到 `/app`，`/app` 默认进入 `/app/dashboard`，智能体展示页位于 `/app/agent`。两页通过 `app/(workspace)/app/layout.tsx` 共用工作区布局，切换时保留侧栏状态。主导航包含 Dashboard、智能体；底部恢复 Settings、Get Help、Search 和示例用户菜单，账户等入口保持模板占位，未接入认证或业务服务。智能体页支持搜索、分类、排序、当前页面收藏与浏览记录，卡片打开能力说明；模型生成尚未接入。智能体展示数据位于 `config/agents.ts`，共享侧栏位于 `components/layout/workspace-sidebar.tsx`。
+访问 `/` 跳转到 `/app`，`/app` 默认进入 `/app/dashboard`，智能体展示页位于 `/app/agent`。工作区页面通过 `app/(workspace)/app/layout.tsx` 共用布局，切换时保留侧栏状态。侧栏、顶部导航和右侧外框固定在视口内，仅 `WorkspaceContent` 内容区滚动。主导航包含 Dashboard、智能体；底部提供 Settings、Get Help、Search 和示例用户菜单，账户等入口保持模板占位，未接入认证或业务服务。
+
+智能体页支持搜索、分类、排序、收藏与最近浏览，卡片进入 `/app/agent/[agentId]` 独立详情页。详情表单提供目标、主题（最多 2000 字）、示例填充、学生水平、生成模式和参考资料记录；草稿按智能体分别保存到浏览器，收藏和最近浏览也保存在本地。文件只在当前页面选择，刷新后需重新选择；网站和教材仅记录，尚未上传或解析。生成按钮仅校验表单，模型生成尚未接入。展示数据位于 `config/agents.ts`，表单配置位于 `config/agent-forms.ts`，共享侧栏位于 `components/layout/workspace-sidebar.tsx`。
 
 ## 开始使用
 
@@ -37,11 +39,12 @@ app/                 页面、布局、加载/错误/404、API 路由
       page.tsx       默认跳转到 /app/dashboard
       dashboard/     Dashboard 模板页面（URL：/app/dashboard）
       agent/         智能体展示页面（URL：/app/agent）
+        [agentId]/   智能体配置表单（URL：/app/agent/:agentId）
 components/
   layout/            公共页面框架
   ui/                shadcn/ui 组件源码
 config/              应用名称和导航等公共配置
-hooks/               预留自定义 React Hooks
+hooks/               自定义 React Hooks、本地草稿存储
 lib/
   client/            预留浏览器请求工具
   server/            服务端工具，使用 server-only 防止导入客户端

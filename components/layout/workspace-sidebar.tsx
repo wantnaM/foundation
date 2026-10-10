@@ -21,16 +21,19 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { siteConfig } from "@/config/site";
 
 export function WorkspaceSidebar(props: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
+  const { setOpenMobile } = useSidebar();
   return (
     <Sidebar {...props}>
       <SidebarHeader className="px-6 py-8">
         <Link
           href="/app"
+          onClick={() => setOpenMobile(false)}
           aria-label="Foundation 首页"
           className="inline-flex w-fit flex-col"
         >
@@ -59,6 +62,7 @@ export function WorkspaceSidebar(props: React.ComponentProps<typeof Sidebar>) {
                     >
                       <Link
                         href={item.href}
+                        onClick={() => setOpenMobile(false)}
                         aria-current={active ? "page" : undefined}
                       >
                         <Icon aria-hidden="true" />

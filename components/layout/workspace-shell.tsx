@@ -4,6 +4,7 @@ import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 export function WorkspaceShell({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider
+      className="h-dvh min-h-0 overflow-clip"
       style={
         {
           "--sidebar-width": "calc(var(--spacing) * 72)",
@@ -12,7 +13,9 @@ export function WorkspaceShell({ children }: { children: React.ReactNode }) {
       }
     >
       <WorkspaceSidebar variant="inset" />
-      <SidebarInset className="min-w-0">{children}</SidebarInset>
+      <SidebarInset className="min-h-0 min-w-0 overflow-clip">
+        {children}
+      </SidebarInset>
     </SidebarProvider>
   );
 }

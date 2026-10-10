@@ -1,12 +1,23 @@
-import type { ReactNode } from "react";
+import { Fragment, type ReactNode } from "react";
+import Link from "next/link";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export function SiteHeader({
-  title = "Documents",
+  title = "Dashboard",
+  breadcrumbs = [],
   actions,
 }: {
   title?: string;
+  breadcrumbs?: { label: string; href: string }[];
   actions?: ReactNode;
 }) {
   return (
@@ -15,11 +26,29 @@ export function SiteHeader({
         <SidebarTrigger className="-ml-1" />
         <Separator
           orientation="vertical"
-          className="mx-2 data-[orientation=vertical]:h-4"
+          className="mx-2 data-vertical:h-4 data-vertical:self-center"
         />
-        <span className="shrink-0 text-base font-medium">{title}</span>
+        <Breadcrumb className="min-w-0" aria-label="面包屑导航">
+          <BreadcrumbList className="flex-nowrap">
+            {breadcrumbs.map((item) => (
+              <Fragment key={item.href}>
+                <BreadcrumbItem className="hidden sm:inline-flex">
+                  <BreadcrumbLink asChild>
+                    <Link href={item.href}>{item.label}</Link>
+                  </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator className="hidden sm:block" />
+              </Fragment>
+            ))}
+            <BreadcrumbItem className="min-w-0">
+              <BreadcrumbPage className="truncate">{title}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
         {actions ? (
-          <div className="ml-auto w-40 min-w-0 sm:w-80 lg:w-96">{actions}</div>
+          <div className="ml-auto w-40 min-w-0 shrink-0 sm:w-80 lg:w-96">
+            {actions}
+          </div>
         ) : null}
       </div>
     </header>
