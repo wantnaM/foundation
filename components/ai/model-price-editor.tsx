@@ -1,6 +1,7 @@
 "use client";
 import { useId, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Settings2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -45,11 +46,11 @@ export function ModelPriceEditor({
       <DialogTrigger asChild>
         <Button
           variant="outline"
-          size="sm"
+          size="icon-sm"
           disabled={disabled}
           aria-label={`${name} 价格设置`}
         >
-          价格设置
+          <Settings2 aria-hidden="true" />
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -107,11 +108,6 @@ export function ModelPriceEditor({
               />
             </div>
           ))}
-          {price?.source === "deepseek-official-peak" && (
-            <p className="text-xs text-muted-foreground">
-              已按 DeepSeek 官方高峰价设置；空闲时段的实际费用可能更低。
-            </p>
-          )}
           {error && (
             <p role="alert" className="text-sm text-destructive">
               {error}

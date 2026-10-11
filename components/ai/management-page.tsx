@@ -74,17 +74,10 @@ export function AIManagementPage({
           className={`@container/main flex flex-1 flex-col gap-4 py-4 md:gap-6 md:py-6 ${section === "models" ? "h-full min-h-0" : ""}`}
         >
           <div className="shrink-0 px-4 lg:px-6">
-            <div className="flex flex-wrap items-center gap-3">
-              <h1 className="text-2xl font-semibold tracking-tight">
-                AI模型管理
-              </h1>
-            </div>
-            <p className="mt-2 text-sm text-muted-foreground">
-              {current.description}
-            </p>
+            <h1 className="sr-only">{current.title}</h1>
             <nav
               aria-label="AI模型管理子页面"
-              className="mt-6 flex flex-wrap gap-1 border-b"
+              className="flex flex-wrap gap-1 border-b"
             >
               {(
                 Object.entries(sections) as [

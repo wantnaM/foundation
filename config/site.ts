@@ -4,5 +4,6 @@ export const siteConfig = {
   navigation: [
     { href: "/app/dashboard", label: "Dashboard" },
     { href: "/app/agent", label: "智能体" },
+    { href: "/app/grading", label: "AI批改" },
   ],
 } as const;

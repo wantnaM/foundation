@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bot, LayoutDashboard, Settings2, CircleHelp, Cpu } from "lucide-react";
+import {
+  Bot,
+  LayoutDashboard,
+  Settings2,
+  CircleHelp,
+  Cpu,
+  FileCheck2,
+} from "lucide-react";
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -42,7 +49,12 @@ export function WorkspaceSidebar(props: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupContent>
             <SidebarMenu className="gap-2">
               {siteConfig.navigation.map((item) => {
-                const Icon = item.href === "/app/agent" ? Bot : LayoutDashboard;
+                const Icon =
+                  item.href === "/app/agent"
+                    ? Bot
+                    : item.href === "/app/grading"
+                      ? FileCheck2
+                      : LayoutDashboard;
                 const active =
                   pathname === item.href ||
                   pathname.startsWith(`${item.href}/`);
