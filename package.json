@@ -8,7 +8,7 @@
     "pnpm": ">=10"
   },
   "scripts": {
-    "ai:test": "node --conditions=react-server --import tsx --test tests/ai-foundation.test.ts",
+    "ai:test": "node --conditions=react-server --import tsx --test tests/ai-foundation.test.ts tests/ai-server.test.ts",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
@@ -17,7 +17,9 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:check": "node --conditions=react-server --import tsx scripts/db-check.ts",
-    "db:test": "node --conditions=react-server --import tsx --test tests/db.test.ts"
+    "db:test": "node --conditions=react-server --import tsx --test tests/db.test.ts",
+    "ai:chat": "node --conditions=react-server --import tsx scripts/ai-chat.ts",
+    "ai:check": "node --conditions=react-server --import tsx scripts/ai-chat.ts --check"
   },
   "dependencies": {
     "@ai-sdk/amazon-bedrock": "^4.0.194",
@@ -43,6 +45,7 @@
     "date-fns": "^4.4.0",
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.5.0",
+    "js-yaml": "^4.3.0",
     "lucide-react": "^1.54.0",
     "next": "16.4.0",
     "next-themes": "^0.4.6",
@@ -64,6 +67,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
+    "@types/js-yaml": "^4.0.9",
     "@types/node": "^22.20.5",
     "@types/pg": "^8.23.1",
     "@types/react": "^19.3.0",

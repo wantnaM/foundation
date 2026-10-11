@@ -8,12 +8,13 @@ dist/
 next-env.d.ts
 *.log
 .DS_Store
-/文档/*
-!/文档/README.md
-!/文档/DATABASE.md
+/文档/
 /.grading-data/
 /backups/
 /.ai-data/
 package.json.*
 
 /data/usage/
+
+/server-providers.yml
+/server-providers.yaml
