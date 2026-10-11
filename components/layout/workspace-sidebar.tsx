@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Bot,
+  ClipboardCheck,
   LayoutDashboard,
   Settings2,
   CircleHelp,
@@ -48,7 +49,14 @@ export function WorkspaceSidebar(props: React.ComponentProps<typeof Sidebar>) {
           <SidebarGroupContent>
             <SidebarMenu className="gap-2">
               {siteConfig.navigation.map((item) => {
-                const Icon = item.href === "/app/agent" ? Bot : LayoutDashboard;
+                const Icon =
+                  item.href === "/app/agent"
+                    ? Bot
+                    : item.href === "/app/grading"
+                      ? ClipboardCheck
+                      : item.href === "/app/ai"
+                        ? Settings2
+                        : LayoutDashboard;
                 const active =
                   pathname === item.href ||
                   pathname.startsWith(`${item.href}/`);

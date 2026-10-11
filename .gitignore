@@ -9,3 +9,7 @@ next-env.d.ts
 *.log
 .DS_Store
 /文档/
+/.grading-data/
+/backups/
+/.ai-data/
+package.json.*

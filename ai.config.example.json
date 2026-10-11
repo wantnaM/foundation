@@ -1,0 +1,28 @@
+{
+  "providers": [
+    {
+      "id": "compatible",
+      "name": "图片与文字模型服务",
+      "type": "openai-compatible",
+      "baseUrl": "https://your-provider.example/v1",
+      "apiKeyEnv": "PLATFORM_MODEL_API_KEY",
+      "enabled": true,
+      "models": [
+        {
+          "id": "replace-with-model-id",
+          "name": "替换为实际模型",
+          "vision": true,
+          "currency": "CNY"
+        }
+      ]
+    },
+    {
+      "id": "demo",
+      "name": "本地演示",
+      "type": "demo",
+      "models": [{ "id": "demo-text", "name": "演示文本模型", "vision": false }]
+    }
+  ],
+  "defaultModel": "demo:demo-text",
+  "routes": { "grading": "compatible:replace-with-model-id" }
+}
