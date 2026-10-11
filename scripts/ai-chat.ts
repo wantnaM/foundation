@@ -13,16 +13,24 @@ async function main() {
   const { closeDatabase } = await import("../lib/server/db");
   const args = process.argv.slice(2).filter((arg) => arg !== "--");
   try {
+    const modelIndex = args.indexOf("--model");
+    const model = modelIndex >= 0 ? args[modelIndex + 1] : undefined;
+    if (!model || model.startsWith("--"))
+      throw new AIConfigurationError(
+        '请明确指定模型，例如：pnpm ai:chat --model deepseek:deepseek-v4-flash "你好"',
+      );
+    args.splice(modelIndex, 2);
     if (args.length === 1 && args[0] === "--check") {
-      const selected = resolveModel();
+      const selected = resolveModel({ modelString: model });
       console.log(`AI 配置已读取，当前模型：${selected.modelString}`);
       console.log(
-        "此检查没有向模型发送请求，不验证密钥有效性。运行 pnpm ai:chat 进行真实调用。",
+        `此检查没有向模型发送请求，不验证密钥有效性。真实调用示例：pnpm ai:chat --model ${selected.modelString} "你好"`,
       );
       return;
     }
     const response = await chat({
-      prompt: args.join(" ") || "请用一句中文介绍你自己。",
+      model,
+      prompt: args.join(" "),
       source: "backend-cli",
     });
     console.log(response.text);

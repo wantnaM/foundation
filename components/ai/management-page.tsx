@@ -9,12 +9,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 const sections = {
   usage: {
     title: "用量信息",
-    description: "了解 AI 调用次数、Token 消耗与使用趋势。",
+    description: "查看各模型的 Token 消耗与每日使用趋势。",
     icon: Activity,
     metrics: ["请求次数", "输入 Tokens", "输出 Tokens", "成功率"],
     empty: "用量统计尚未接入",
@@ -22,7 +21,7 @@ const sections = {
   },
   models: {
     title: "模型列表",
-    description: "统一查看可用模型、连接状态与模型能力。",
+    description: "按供应商查看模型清单、配置状态与能力信息。",
     icon: Cpu,
     metrics: ["已配置服务商", "可用模型", "默认模型", "连接状态"],
     empty: "模型清单尚未接入",
@@ -70,16 +69,15 @@ export function AIManagementPage({
         title={current.title}
         breadcrumbs={[{ label: "AI模型管理", href: "/ai" }]}
       />
-      <WorkspaceContent>
-        <div className="@container/main flex flex-1 flex-col gap-4 py-4 md:gap-6 md:py-6">
-          <div className="px-4 lg:px-6">
+      <WorkspaceContent scrollable={section !== "models"}>
+        <div
+          className={`@container/main flex flex-1 flex-col gap-4 py-4 md:gap-6 md:py-6 ${section === "models" ? "h-full min-h-0" : ""}`}
+        >
+          <div className="shrink-0 px-4 lg:px-6">
             <div className="flex flex-wrap items-center gap-3">
               <h1 className="text-2xl font-semibold tracking-tight">
                 AI模型管理
               </h1>
-              <Badge variant="outline">
-                {children ? "已接入请求记录" : "初始化阶段"}
-              </Badge>
             </div>
             <p className="mt-2 text-sm text-muted-foreground">
               {current.description}
@@ -130,7 +128,9 @@ export function AIManagementPage({
               ))}
             </div>
           )}
-          <div className="px-4 lg:px-6">
+          <div
+            className={`px-4 lg:px-6 ${section === "models" ? "min-h-0 flex-1" : ""}`}
+          >
             {children ?? (
               <Card>
                 <CardContent className="flex min-h-72 flex-col items-center justify-center px-6 py-12 text-center">

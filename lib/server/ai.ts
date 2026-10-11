@@ -22,7 +22,7 @@ const inputSchema = z
     prompt: z.string().trim().min(1).optional(),
     messages: z.array(messageSchema).min(1).optional(),
     system: z.string().optional(),
-    model: z.string().min(1).optional(),
+    model: z.string().trim().min(1),
     source: z.string().trim().min(1).max(80).default("backend-chat"),
     // Task policy belongs to the caller. Omitted settings stay omitted.
     maxOutputTokens: z.number().int().positive().optional(),
@@ -56,10 +56,10 @@ export async function chat(options: ChatOptions) {
   if (!parsed.success)
     throw new BackendAIError(
       "INVALID_INPUT",
-      "请提供有效的问题或对话记录，并检查输出长度和超时设置",
+      "请明确指定模型，提供有效的问题或对话记录，并检查输出长度和超时设置",
     );
   const input = parsed.data;
-  const requestedModel = input.model ?? process.env.DEFAULT_MODEL;
+  const requestedModel = input.model;
   const body: RequestBody = {
     system: input.system,
     messages: input.messages ?? [{ role: "user", content: input.prompt! }],

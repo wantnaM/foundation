@@ -3,17 +3,16 @@ import { getModel, PROVIDERS, type ProviderId } from "@/lib/ai/providers";
 import { modelIdsMatch } from "@/lib/ai/model-aliases";
 import { AIConfigurationError, readServerProviders } from "./provider-config";
 
-// OpenMAIC selection order without classroom routes or browser-supplied credentials:
-// explicit backend model > DEFAULT_MODEL. No hidden vendor fallback.
-export function resolveModel(params: { modelString?: string } = {}) {
-  const modelString = (params.modelString ?? process.env.DEFAULT_MODEL)?.trim();
+// Every caller must select a model explicitly; environment defaults are not used.
+export function resolveModel(params: { modelString: string }) {
+  const modelString = params?.modelString?.trim();
   const separator = modelString?.indexOf(":") ?? -1;
   if (
     !modelString ||
     separator <= 0 ||
     !modelString.slice(separator + 1).trim()
   )
-    throw new AIConfigurationError("请设置默认模型，格式为 厂商:模型名称");
+    throw new AIConfigurationError("请明确指定模型，格式为 厂商:模型名称");
   const providerId = modelString.slice(0, separator) as ProviderId;
   const modelId = modelString.slice(separator + 1).trim();
   if (!Object.hasOwn(PROVIDERS, providerId))

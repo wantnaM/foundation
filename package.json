@@ -8,7 +8,7 @@
     "pnpm": ">=10"
   },
   "scripts": {
-    "ai:test": "node --conditions=react-server --import tsx --test tests/ai-foundation.test.ts tests/ai-server.test.ts",
+    "ai:test": "node --conditions=react-server --import tsx --test tests/ai-foundation.test.ts tests/ai-server.test.ts tests/ai-model-catalog.test.ts tests/ai-usage.test.ts",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

@@ -99,7 +99,11 @@ test("沿用 OpenMAIC：环境配置按字段覆盖 YAML，公开摘要不含密
   assert.deepEqual(getServerProviders(), {
     deepseek: { models: ["deepseek-v4-flash"] },
   });
-  assert.equal(resolveModel().modelId, "deepseek-v4-flash");
+  assert.equal(
+    resolveModel({ modelString: "deepseek:deepseek-v4-flash" }).modelId,
+    "deepseek-v4-flash",
+  );
+  assert.throws(() => resolveModel({ modelString: "" }), /明确指定模型/);
   assert.throws(
     () => resolveModel({ modelString: "deepseek:deepseek-v4-pro" }),
     /允许清单/,
@@ -113,10 +117,10 @@ test("沿用 OpenMAIC：环境配置按字段覆盖 YAML，公开摘要不含密
 
 test("配置错误立即失败，不猜测默认模型或泄漏 YAML 内容", async () => {
   delete process.env.DEFAULT_MODEL;
-  assert.throws(resolveModel, /默认模型/);
+  assert.throws(() => resolveModel({ modelString: "" }), /明确指定模型/);
   assert.throws(
     () => resolveModel({ modelString: "deepseek-flash" }),
-    /默认模型/,
+    /明确指定模型/,
   );
   assert.throws(
     () => resolveModel({ modelString: "__proto__:model" }),
@@ -138,12 +142,15 @@ test("配置错误立即失败，不猜测默认模型或泄漏 YAML 内容", as
     /尚未配置/,
   );
   await assert.rejects(
-    chat({ prompt: "", messages: [] }),
+    chat({ model: "deepseek:deepseek-flash", prompt: "", messages: [] }),
     (error: unknown) =>
       error instanceof BackendAIError && error.code === "INVALID_INPUT",
   );
   await assert.rejects(
-    chat({ prompt: "有效输入但服务商未配置" }),
+    chat({
+      model: "deepseek:deepseek-flash",
+      prompt: "有效输入但服务商未配置",
+    }),
     AIConfigurationError,
   );
   const failed = (await listRequests(1, "failed")).rows[0];
@@ -213,7 +220,18 @@ test("后端真实 SDK 路径：问答、历史消息、错误脱敏、取消和
       DEEPSEEK_BASE_URL: `http://127.0.0.1:${address.port}/v1`,
     });
     const timeoutSpy = mock.method(AbortSignal, "timeout");
-    const result = await chat({ prompt: "你好", system: "简短回答" });
+    await assert.rejects(
+      // @ts-expect-error Verify untyped callers cannot use the legacy environment default.
+      chat({ prompt: "未指定模型" }),
+      (error: unknown) =>
+        error instanceof BackendAIError && error.code === "INVALID_INPUT",
+    );
+    assert.equal(calls.length, 0);
+    const result = await chat({
+      model: "deepseek:deepseek-flash",
+      prompt: "你好",
+      system: "简短回答",
+    });
     assert.equal(
       timeoutSpy.mock.callCount(),
       0,
@@ -241,6 +259,7 @@ test("后端真实 SDK 路径：问答、历史消息、错误脱敏、取消和
     const longPrompt = "长".repeat(100001);
     const longSystem = "规".repeat(20001);
     const custom = await chat({
+      model: "deepseek:deepseek-flash",
       prompt: longPrompt,
       system: longSystem,
       maxOutputTokens: 131072,
@@ -269,9 +288,10 @@ test("后端真实 SDK 路径：问答、历史消息、错误脱敏、取消和
       role: i % 2 ? ("assistant" as const) : ("user" as const),
       content: `消息${i}`,
     }));
-    await chat({ messages: history });
+    await chat({ model: "deepseek:deepseek-flash", messages: history });
     assert.equal((calls.at(-1)!.messages as unknown[]).length, 101);
     await chat({
+      model: "deepseek:deepseek-flash",
       messages: [
         { role: "user", content: "第一次问题" },
         { role: "assistant", content: "之前的回答" },
@@ -282,7 +302,7 @@ test("后端真实 SDK 路径：问答、历史消息、错误脱敏、取消和
     status = 401;
     const before = calls.length;
     await assert.rejects(
-      chat({ prompt: "错误测试" }),
+      chat({ model: "deepseek:deepseek-flash", prompt: "错误测试" }),
       (error: unknown) =>
         error instanceof BackendAIError &&
         error.code === "HTTP_401" &&
@@ -301,7 +321,7 @@ test("后端真实 SDK 路径：问答、历史消息、错误脱敏、取消和
     status = 200;
     finishReason = "length";
     await assert.rejects(
-      chat({ prompt: "截断测试" }),
+      chat({ model: "deepseek:deepseek-flash", prompt: "截断测试" }),
       (error: unknown) =>
         error instanceof BackendAIError && error.code === "OUTPUT_LIMIT",
     );
@@ -315,13 +335,17 @@ test("后端真实 SDK 路径：问答、历史消息、错误脱敏、取消和
     );
     reply = "";
     await assert.rejects(
-      chat({ prompt: "空结果测试" }),
+      chat({ model: "deepseek:deepseek-flash", prompt: "空结果测试" }),
       (error: unknown) =>
         error instanceof BackendAIError && error.code === "EMPTY_OUTPUT",
     );
     reply = "后端调用成功";
     await assert.rejects(
-      chat({ prompt: "取消测试", signal: AbortSignal.abort() }),
+      chat({
+        model: "deepseek:deepseek-flash",
+        prompt: "取消测试",
+        signal: AbortSignal.abort(),
+      }),
       (error: unknown) =>
         error instanceof BackendAIError && error.code === "ABORTED",
     );
@@ -329,7 +353,11 @@ test("后端真实 SDK 路径：问答、历史消息、错误脱敏、取消和
 
     responseDelay = 80;
     await assert.rejects(
-      chat({ prompt: "短任务主动设置超时", timeoutMs: 10 }),
+      chat({
+        model: "deepseek:deepseek-flash",
+        prompt: "短任务主动设置超时",
+        timeoutMs: 10,
+      }),
       (error: unknown) =>
         error instanceof BackendAIError && error.code === "ABORTED",
     );
@@ -337,15 +365,30 @@ test("后端真实 SDK 路径：问答、历史消息、错误脱敏、取消和
 
     status = 503;
     const beforeNoRetry = calls.length;
-    await assert.rejects(chat({ prompt: "任务主动禁止重试", maxRetries: 0 }));
+    await assert.rejects(
+      chat({
+        model: "deepseek:deepseek-flash",
+        prompt: "任务主动禁止重试",
+        maxRetries: 0,
+      }),
+    );
     assert.equal(calls.length, beforeNoRetry + 1);
     const beforeRetry = calls.length;
     await assert.rejects(
-      chat({ prompt: "任务主动允许一次重试", maxRetries: 1 }),
+      chat({
+        model: "deepseek:deepseek-flash",
+        prompt: "任务主动允许一次重试",
+        maxRetries: 1,
+      }),
     );
     assert.equal(calls.length, beforeRetry + 2);
     const beforeSDKRetry = calls.length;
-    await assert.rejects(chat({ prompt: "未指定时沿用当前 SDK 重试策略" }));
+    await assert.rejects(
+      chat({
+        model: "deepseek:deepseek-flash",
+        prompt: "未指定时沿用当前 SDK 重试策略",
+      }),
+    );
     assert.equal(calls.length, beforeSDKRetry + 3);
     status = 200;
 
@@ -358,7 +401,11 @@ test("后端真实 SDK 路径：问答、历史消息、错误脱敏、取消和
       { maxRetries: -1 },
     ]) {
       await assert.rejects(
-        chat({ prompt: "非法参数", ...settings }),
+        chat({
+          model: "deepseek:deepseek-flash",
+          prompt: "非法参数",
+          ...settings,
+        }),
         (error: unknown) =>
           error instanceof BackendAIError && error.code === "INVALID_INPUT",
       );
@@ -366,7 +413,10 @@ test("后端真实 SDK 路径：问答、历史消息、错误脱敏、取消和
     assert.equal(calls.length, beforeInvalid);
 
     hasUsage = false;
-    const noUsage = await chat({ prompt: "没有用量信息" });
+    const noUsage = await chat({
+      model: "deepseek:deepseek-flash",
+      prompt: "没有用量信息",
+    });
     assert.equal((await getRequest(noUsage.requestId))?.input_tokens, null);
     assert.equal((await getRequest(noUsage.requestId))?.output_tokens, null);
     hasUsage = true;
@@ -376,7 +426,7 @@ test("后端真实 SDK 路径：问答、历史消息、错误脱敏、取消和
     await query("ALTER TABLE ai_requests RENAME TO ai_requests_unavailable");
     try {
       await assert.rejects(
-        chat({ prompt: "入库失败不调用" }),
+        chat({ model: "deepseek:deepseek-flash", prompt: "入库失败不调用" }),
         (error: unknown) =>
           error instanceof RequestStorageError && error.phase === "start",
       );
@@ -403,7 +453,11 @@ test("后端真实 SDK 路径：问答、历史消息、错误脱敏、取消和
     try {
       const beforeFinalWriteFailure = calls.length;
       await assert.rejects(
-        chat({ prompt: "结束入库失败", source: "finish-failure-test" }),
+        chat({
+          model: "deepseek:deepseek-flash",
+          prompt: "结束入库失败",
+          source: "finish-failure-test",
+        }),
         (error: unknown) =>
           error instanceof RequestStorageError && error.phase === "finish",
       );
@@ -450,16 +504,34 @@ test("后端真实 SDK 路径：问答、历史消息、错误脱敏、取消和
       pathToFileURL(path.resolve("node_modules/tsx/dist/loader.mjs")).href,
       path.resolve("scripts/ai-chat.ts"),
     ];
-    const checked = await runFile(process.execPath, [...args, "--check"], {
-      cwd,
-      env,
-    });
+    await assert.rejects(
+      runFile(process.execPath, [...args, "你好"], { cwd, env }),
+      (error: unknown) =>
+        Boolean(
+          error &&
+          typeof error === "object" &&
+          "stderr" in error &&
+          String(error.stderr).includes("请明确指定模型"),
+        ),
+    );
+    const checked = await runFile(
+      process.execPath,
+      [...args, "--check", "--model", "deepseek:deepseek-flash"],
+      {
+        cwd,
+        env,
+      },
+    );
     assert.match(checked.stdout, /deepseek:deepseek-flash/);
     assert.ok(!checked.stdout.includes("backend-test-secret"));
-    const called = await runFile(process.execPath, [...args, "你好"], {
-      cwd,
-      env,
-    });
+    const called = await runFile(
+      process.execPath,
+      [...args, "--model", "deepseek:deepseek-flash", "你好"],
+      {
+        cwd,
+        env,
+      },
+    );
     assert.match(called.stdout, /后端调用成功/);
     assert.match(called.stdout, /已保存/);
     const cliRows = await query(
