@@ -64,10 +64,8 @@ shadcn/ui 将组件源码写入 `components/ui/`，可以直接修改；配置�
 pnpm dlx shadcn@4.21.4 add select
 ```
 
-AI 批改入口为 `/app/grading`。默认使用演示识别与评分，真实上传、后台执行、教师审核、成绩导出和本地 SQLite 保存已接通；需要同时运行 `pnpm dev` 和 `pnpm grading:worker`。演示账户为 `teacher` / `demo-teacher`，另一隔离账户为 `teacher2` / `demo-teacher`。
+AI 基座迁入 OpenMAIC 的 12 个源文件，保留原目录，包含模型清单、统一调用、思考设置、运行日志和本地用量保存。代码位置、迁移差异及验证方式见 [AI 基座迁移说明](AI-FOUNDATION.md)。旧 AI 管理页面和接口已移除，目前没有新的管理页面。
 
-启动、真实服务切换、部署与备份恢复见 [AI 批改运行说明](GRADING.md)。真实模式使用 PaddleOCR-VL 完整解析服务和兼容图片聊天接口的模型，填写 `.env.local` 后重启网页与后台即可切换；真实准确率需要另行使用教师样卷验收。
-
-平台公共 AI 入口为 `/app/ai`，提供服务商配置、模型清单、阶段路由、调用日志和用量汇总；批改真实模型调用已使用公共服务，兼容原有配置。使用方法与数据维护见 [公共 AI 运行说明](AI-PLATFORM.md)。
+AI 批改暂时从导航隐藏，后台保持暂停；原页面、任务和数据保留，暂不继续开发。恢复运行时参考 [AI 批改运行说明](GRADING.md)。
 
 参考：[Next.js 安装说明](https://nextjs.org/docs/app/getting-started/installation)、[shadcn/ui Next.js 安装说明](https://ui.shadcn.com/docs/installation/next)。

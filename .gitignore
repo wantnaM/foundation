@@ -13,3 +13,5 @@ next-env.d.ts
 /backups/
 /.ai-data/
 package.json.*
+
+/data/usage/

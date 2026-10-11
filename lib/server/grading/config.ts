@@ -1,6 +1,5 @@
 import "server-only";
 import path from "node:path";
-import { resolveAI } from "../ai/config";
 
 export const dataDir = () =>
   // Runtime uploads are created on the host, never bundled into the web build.
@@ -18,18 +17,9 @@ export function serviceConfig() {
   const base = process.env.GRADING_AI_BASE_URL;
   const key = process.env.GRADING_AI_API_KEY;
   const model = process.env.GRADING_AI_MODEL;
-  if (!ocr)
+  if (!ocr || !base || !key || !model)
     throw new Error("真实服务尚未配置完整，请检查 OCR 地址及模型环境变量");
-  for (const stage of [
-    "grading.questions",
-    "grading.answers",
-    "grading.score",
-  ]) {
-    const selected = resolveAI(stage, true);
-    if (selected.provider.type === "demo" || !selected.model.vision)
-      throw new Error("真实服务尚未配置完整，请配置支持图片输入的真实模型");
-  }
-  for (const value of [ocr]) {
+  for (const value of [ocr, base]) {
     const url = new URL(value);
     if (!["http:", "https:"].includes(url.protocol))
       throw new Error("服务地址必须使用 HTTP 或 HTTPS");

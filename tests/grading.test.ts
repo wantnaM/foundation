@@ -14,10 +14,8 @@ process.env.GRADING_DATA_DIR = path.join(
   "tests",
   randomUUID(),
 );
+Object.assign(process.env, { NODE_ENV: "test" });
 process.env.GRADING_MODE = "demo";
-process.env.AI_DATA_DIR = path.join(process.env.GRADING_DATA_DIR, "public-ai");
-delete process.env.AI_PROVIDERS_CONFIG;
-import { closeAIDatabases } from "../lib/server/ai/store";
 import { createTask, act, ownedTask } from "../lib/server/grading/tasks";
 import {
   db,
@@ -34,7 +32,6 @@ const user = { id: "test-teacher", name: "测试教师" };
 let task: Task;
 after(() => {
   db().close();
-  closeAIDatabases();
 });
 async function runQueued() {
   const lease = randomUUID();
