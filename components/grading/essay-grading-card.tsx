@@ -1,9 +1,5 @@
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import Link from "next/link";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export function EssayGradingCard() {
   return (
@@ -19,7 +15,14 @@ export function EssayGradingCard() {
         </div>
       </CardHeader>
       <CardContent className="gap-2 px-5">
-        <CardTitle>作文批改</CardTitle>
+        <CardTitle>
+          <Link
+            href="/app/grading/chinese-essay"
+            className="after:absolute after:inset-0 after:rounded-2xl focus-visible:outline-2 focus-visible:outline-ring"
+          >
+            语文作文批改
+          </Link>
+        </CardTitle>
         <p className="text-sm leading-7 text-muted-foreground sm:text-base">
           根据作文题目与评分标准，分析内容、结构和语言，提供评分、原文批注与修改建议。
         </p>
