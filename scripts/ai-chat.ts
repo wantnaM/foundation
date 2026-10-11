@@ -8,7 +8,9 @@ async function main() {
   const { resolveModel } = await import("../lib/server/resolve-model");
   const { AIConfigurationError } =
     await import("../lib/server/provider-config");
-  const { BackendAIError } = await import("../lib/server/ai");
+  const { BackendAIError, RequestStorageError } =
+    await import("../lib/server/ai");
+  const { closeDatabase } = await import("../lib/server/db");
   const args = process.argv.slice(2).filter((arg) => arg !== "--");
   try {
     if (args.length === 1 && args[0] === "--check") {
@@ -24,13 +26,20 @@ async function main() {
       source: "backend-cli",
     });
     console.log(response.text);
+    console.log(
+      `请求记录：${response.requestId}（已保存，可在 /ai/logs 查看）`,
+    );
   } catch (error) {
     console.error(
-      error instanceof AIConfigurationError || error instanceof BackendAIError
+      error instanceof AIConfigurationError ||
+        error instanceof BackendAIError ||
+        error instanceof RequestStorageError
         ? error.message
         : "AI 调用未完成，请检查服务端配置",
     );
     process.exitCode = 1;
+  } finally {
+    await closeDatabase();
   }
 }
 

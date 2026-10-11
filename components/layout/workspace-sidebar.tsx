@@ -2,13 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Bot,
-  LayoutDashboard,
-  Settings2,
-  CircleHelp,
-  Search,
-} from "lucide-react";
+import { Bot, LayoutDashboard, Settings2, CircleHelp, Cpu } from "lucide-react";
 import { NavSecondary } from "@/components/nav-secondary";
 import { NavUser } from "@/components/nav-user";
 import {
@@ -80,7 +74,7 @@ export function WorkspaceSidebar(props: React.ComponentProps<typeof Sidebar>) {
           items={[
             { title: "Settings", icon: <Settings2 /> },
             { title: "Get Help", icon: <CircleHelp /> },
-            { title: "Search", icon: <Search /> },
+            { title: "AI模型管理", url: "/ai", icon: <Cpu /> },
           ]}
         />
       </SidebarContent>
