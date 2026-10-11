@@ -50,7 +50,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { agents, agentCategories } from "@/config/agents";
-import { cn } from "@/lib/utils";
+import { cn } from "cn";
 
 export function AgentLibrary() {
   const [query, setQuery] = useState("");

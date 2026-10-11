@@ -3,7 +3,7 @@ import "./globals.css";
 import "@fontsource-variable/manrope";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Inter } from "next/font/google";
-import { cn } from "@/lib/utils";
+import { cn } from "cn";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 

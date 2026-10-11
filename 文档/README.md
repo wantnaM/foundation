@@ -1,6 +1,6 @@
 # Foundation · 通用全栈框架
 
-基于 Next.js App Router、React、TypeScript、Tailwind CSS、shadcn/ui（Radix）和 Lucide。包含通用工程框架、智能体展示和教师 AI 批改工作台。
+基于 Next.js App Router、React、TypeScript、Tailwind CSS、shadcn/ui（Radix）和 Lucide。包含通用工程框架、智能体展示、AI 基座和 PostgreSQL 数据库接入。
 
 访问 `/` 跳转到 `/app`，`/app` 默认进入 `/app/dashboard`，智能体展示页位于 `/app/agent`。工作区页面通过 `app/(workspace)/app/layout.tsx` 共用布局，切换时保留侧栏状态。侧栏、顶部导航和右侧外框固定在视口内，仅 `WorkspaceContent` 内容区滚动。主导航包含 Dashboard、智能体；底部提供 Settings、Get Help、Search 和示例用户菜单，账户等入口保持模板占位，未接入认证或业务服务。
 
@@ -15,7 +15,7 @@ pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-默认访问 http://localhost:3000。端口被占用时可指定 `pnpm dev --port 3100`。本框架不需要环境变量；后续配置可参考 `.env.example`。
+默认访问 http://localhost:3000。端口被占用时可指定 `pnpm dev --port 3100`。普通页面不依赖数据库启动；数据库功能需要按 `.env.example` 配置 `.env.local`，见 [数据库接入说明](DATABASE.md)。
 
 ```powershell
 pnpm lint
@@ -31,7 +31,8 @@ pnpm start
 
 ```text
 app/                 页面、布局、加载/错误/404、API 路由
-  api/health/        通用健康检查
+  api/health/        应用健康检查
+  api/ready/         数据库就绪检查
   page.tsx           首页跳转到 /app
   (workspace)/       工作区路由组（不影响 URL）
     app/             /app 工作区父路由
@@ -48,7 +49,6 @@ hooks/               自定义 React Hooks、本地草稿存储
 lib/
   client/            预留浏览器请求工具
   server/            服务端工具，使用 server-only 防止导入客户端
-  utils.ts           cn 样式合并工具
 types/               共享 TypeScript 类型
 public/              静态资源
 文档/                方案、搭建记录及浏览器验收截图
@@ -64,8 +64,10 @@ shadcn/ui 将组件源码写入 `components/ui/`，可以直接修改；配置�
 pnpm dlx shadcn@4.21.4 add select
 ```
 
-AI 基座迁入 OpenMAIC 的 12 个源文件，保留原目录，包含模型清单、统一调用、思考设置、运行日志和本地用量保存。代码位置、迁移差异及验证方式见 [AI 基座迁移说明](AI-FOUNDATION.md)。旧 AI 管理页面和接口已移除，目前没有新的管理页面。
+AI 基座迁入 OpenMAIC 的 12 个源文件，保留原目录，包含模型清单、统一调用、思考设置、运行日志和本地用量保存。源文件位于 `lib/ai/`、`lib/types/provider.ts`、`lib/logger.ts`、`lib/usage/normalize.ts` 和 `lib/server/usage-storage.ts`。旧 AI 管理页面和接口已移除，目前没有新的管理页面。
 
-AI 批改暂时从导航隐藏，后台保持暂停；原页面、任务和数据保留，暂不继续开发。恢复运行时参考 [AI 批改运行说明](GRADING.md)。
+旧 AI 批改的页面、接口、后台、测试及专用依赖已删除，后续重新设计。原本地历史数据保留在忽略目录中，新框架不会读取。
+
+数据库公共能力位于 `lib/server/db/`，支持复用连接、参数化查询和事务；运行 `pnpm db:check` 检查真实连接。`/api/health` 检查应用运行，`/api/ready` 检查数据库是否可用；完整接入与验证方法见 [数据库接入说明](DATABASE.md)。
 
 参考：[Next.js 安装说明](https://nextjs.org/docs/app/getting-started/installation)、[shadcn/ui Next.js 安装说明](https://ui.shadcn.com/docs/installation/next)。
