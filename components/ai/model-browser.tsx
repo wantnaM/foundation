@@ -16,6 +16,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { CatalogModel, CatalogProvider } from "@/lib/server/model-catalog";
+import {
+  priceKey,
+  type ModelPrice,
+  type ModelPrices,
+} from "@/lib/model-prices";
+import { ModelPriceEditor } from "./model-price-editor";
 
 const capabilityIcons = {
   深度思考: Brain,
@@ -24,7 +30,17 @@ const capabilityIcons = {
   流式输出: Radio,
 };
 
-function ModelRow({ model }: { model: CatalogModel }) {
+function ModelRow({
+  model,
+  provider,
+  price,
+  pricesAvailable,
+}: {
+  model: CatalogModel;
+  provider: string;
+  price?: ModelPrice;
+  pricesAvailable: boolean;
+}) {
   return (
     <li className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 py-3">
       <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -54,6 +70,13 @@ function ModelRow({ model }: { model: CatalogModel }) {
         {!model.capabilities.length && (
           <span className="text-xs text-muted-foreground">能力未登记</span>
         )}
+        <ModelPriceEditor
+          provider={provider}
+          model={model.id}
+          name={model.name}
+          price={price}
+          disabled={!pricesAvailable}
+        />
       </div>
       {(model.contextWindow || model.outputWindow) && (
         <p className="w-full text-xs text-muted-foreground">
@@ -64,6 +87,11 @@ function ModelRow({ model }: { model: CatalogModel }) {
             `输出上限 ${model.outputWindow.toLocaleString("zh-CN")} Tokens`}
         </p>
       )}
+      {price && (
+        <p className="w-full text-xs text-muted-foreground">
+          {`输入 ¥${price.input} · 输出 ¥${price.output} · 缓存命中 ¥${price.cacheHit} / 百万 Tokens`}
+        </p>
+      )}
     </li>
   );
 }
@@ -71,9 +99,13 @@ function ModelRow({ model }: { model: CatalogModel }) {
 export function ModelBrowser({
   providers,
   initialProviderId,
+  prices,
+  pricesAvailable,
 }: {
   providers: CatalogProvider[];
   initialProviderId: string;
+  prices: ModelPrices;
+  pricesAvailable: boolean;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -139,6 +171,11 @@ export function ModelBrowser({
         aria-label={`${selected.name} 模型列表`}
         className="flex min-h-0 min-w-0 flex-col overflow-hidden p-4 lg:p-5"
       >
+        {!pricesAvailable && (
+          <p role="alert" className="mb-3 text-sm text-destructive">
+            暂时无法读取价格，请稍后刷新。
+          </p>
+        )}
         <div className="flex shrink-0 flex-wrap items-start justify-between gap-3">
           <div>
             <div className="flex flex-wrap items-center gap-2">
@@ -212,7 +249,13 @@ export function ModelBrowser({
           {visibleModels.length > 0 && (
             <ul className="divide-y overflow-hidden rounded-lg border">
               {visibleModels.map((model) => (
-                <ModelRow key={model.id} model={model} />
+                <ModelRow
+                  key={model.id}
+                  model={model}
+                  provider={selected.id}
+                  price={prices[priceKey(selected.id, model.id)]}
+                  pricesAvailable={pricesAvailable}
+                />
               ))}
             </ul>
           )}

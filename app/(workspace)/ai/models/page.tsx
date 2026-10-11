@@ -3,11 +3,20 @@ import { AIManagementPage } from "@/components/ai/management-page";
 import { ModelBrowser } from "@/components/ai/model-browser";
 import { getModelCatalog } from "@/lib/server/model-catalog";
 import { connection } from "next/server";
+import { getModelPrices } from "@/lib/server/model-prices";
+import type { ModelPrices } from "@/lib/model-prices";
 
 export const metadata: Metadata = { title: "模型列表 · AI模型管理" };
 
 export default async function Page() {
   await connection();
+  let prices: ModelPrices = {};
+  let pricesAvailable = true;
+  try {
+    prices = await getModelPrices();
+  } catch {
+    pricesAvailable = false;
+  }
   let catalog: ReturnType<typeof getModelCatalog> | undefined;
   try {
     catalog = getModelCatalog();
@@ -31,7 +40,11 @@ export default async function Page() {
   }
   return (
     <AIManagementPage section="models" showMetrics={false}>
-      <ModelBrowser {...catalog} />
+      <ModelBrowser
+        {...catalog}
+        prices={prices}
+        pricesAvailable={pricesAvailable}
+      />
     </AIManagementPage>
   );
 }

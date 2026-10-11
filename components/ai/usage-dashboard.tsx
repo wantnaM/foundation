@@ -31,11 +31,18 @@ import {
 } from "@/components/ui/card";
 import { usagePeriod, type UsageData } from "@/lib/ai-usage";
 const number = new Intl.NumberFormat("zh-CN");
+const money = (value: number) =>
+  new Intl.NumberFormat("zh-CN", {
+    style: "currency",
+    currency: "CNY",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Math.ceil(Number((value * 100).toPrecision(15))) / 100);
 const compact = new Intl.NumberFormat("en", {
   notation: "compact",
   maximumFractionDigits: 1,
 });
-const config = {
+const tokenConfig = {
   input: { label: "输入 Tokens", color: "var(--primary)" },
   output: {
     label: "输出 Tokens",
@@ -47,12 +54,21 @@ export function UsageDashboard({
   period,
   provider,
   model,
+  costs = false,
 }: {
   data: UsageData;
   period: ReturnType<typeof usagePeriod>;
   provider: string;
   model: string;
+  costs?: boolean;
 }) {
+  const config = costs
+    ? {
+        input: { ...tokenConfig.input, label: "输入费用" },
+        output: { ...tokenConfig.output, label: "输出费用" },
+      }
+    : tokenConfig;
+  const displayValue = costs ? money : (value: number) => number.format(value);
   const [mode, setMode] = useState<"day" | "model">("day");
   const [range, setRange] = useState(period.range);
   const [selectedProvider, setProvider] = useState(provider);
@@ -65,11 +81,15 @@ export function UsageDashboard({
   const input = data.models.reduce((s, r) => s + r.input, 0),
     output = data.models.reduce((s, r) => s + r.output, 0);
   const count = data.models.reduce((s, r) => s + r.count, 0);
+  const missing = data.models.reduce((s, r) => s + r.missing, 0);
   const known =
     count === 0 || data.models.some((r) => r.inputKnown || r.outputKnown);
   return (
     <div className="space-y-5">
-      <form action="/ai/usage" className="flex flex-wrap items-center gap-3">
+      <form
+        action={costs ? "/ai/costs" : "/ai/usage"}
+        className="flex flex-wrap items-center gap-3"
+      >
         <input type="hidden" name="range" value={range} />
         <input type="hidden" name="provider" value={selectedProvider} />
         <input type="hidden" name="model" value={selectedModel} />
@@ -186,14 +206,14 @@ export function UsageDashboard({
       </form>
       <div className="grid grid-cols-1 gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs @xl/main:grid-cols-3 dark:*:data-[slot=card]:bg-card">
         {[
-          ["总 Tokens", input + output, known],
+          [costs ? "预估总费用" : "总 Tokens", input + output, known],
           [
-            "输入 Tokens",
+            costs ? "输入费用" : "输入 Tokens",
             input,
             count === 0 || data.models.some((r) => r.inputKnown),
           ],
           [
-            "输出 Tokens",
+            costs ? "输出费用" : "输出 Tokens",
             output,
             count === 0 || data.models.some((r) => r.outputKnown),
           ],
@@ -202,15 +222,31 @@ export function UsageDashboard({
             <CardHeader>
               <CardDescription>{String(label)}</CardDescription>
               <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-                {available ? number.format(Number(value)) : "未提供"}
+                {available
+                  ? displayValue(Number(value))
+                  : costs
+                    ? "暂无法估算"
+                    : "未提供"}
               </CardTitle>
             </CardHeader>
           </Card>
         ))}
       </div>
-      <Card aria-label="Token 用量统计图" className="@container/card">
+      {costs && missing > 0 && (
+        <div
+          role="status"
+          className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm"
+        >
+          有 {missing}{" "}
+          条记录因缺少价格或必要用量暂无法完整估算，当前仅合计可计算的费用。
+        </div>
+      )}
+      <Card
+        aria-label={costs ? "费用估值统计图" : "Token 用量统计图"}
+        className="@container/card"
+      >
         <CardHeader>
-          <CardTitle>Tokens</CardTitle>
+          <CardTitle>{costs ? "费用（元）" : "Tokens"}</CardTitle>
           <CardAction>
             <ToggleGroup
               type="single"
@@ -246,7 +282,9 @@ export function UsageDashboard({
             </div>
           ) : !known ? (
             <div className="flex h-80 items-center justify-center text-sm text-muted-foreground">
-              服务商未提供 Token 用量
+              {costs
+                ? "缺少价格或必要用量，暂无法估算费用"
+                : "服务商未提供 Token 用量"}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -261,8 +299,8 @@ export function UsageDashboard({
                   className="h-[360px] w-full aspect-auto"
                   aria-label={
                     mode === "day"
-                      ? "横轴为日期，纵轴为 Token 用量"
-                      : "横轴为模型，纵轴为 Token 用量"
+                      ? `横轴为日期，纵轴为${costs ? "人民币费用" : "Token 用量"}`
+                      : `横轴为模型，纵轴为${costs ? "人民币费用" : "Token 用量"}`
                   }
                 >
                   <BarChart
@@ -289,11 +327,18 @@ export function UsageDashboard({
                       }
                     />
                     <YAxis
+                      domain={
+                        costs
+                          ? [0, (maximum: number) => Math.max(0.04, maximum)]
+                          : undefined
+                      }
                       tickLine={false}
                       axisLine={false}
-                      tickFormatter={(v) => compact.format(v)}
-                      width={56}
-                      allowDecimals={false}
+                      tickFormatter={(v) =>
+                        costs ? money(v) : compact.format(v)
+                      }
+                      width={costs ? 80 : 56}
+                      allowDecimals={costs}
                     />
                     <ChartTooltip
                       content={({ active, payload }) => {
@@ -304,10 +349,18 @@ export function UsageDashboard({
                           <div className="min-w-56 space-y-2 rounded-lg border bg-background p-3 text-xs shadow-md">
                             <p className="font-semibold">{row.label}</p>
                             {[
-                              ["输入 Tokens", row.input, row.inputKnown],
-                              ["输出 Tokens", row.output, row.outputKnown],
                               [
-                                "总 Tokens",
+                                costs ? "输入费用" : "输入 Tokens",
+                                row.input,
+                                row.inputKnown,
+                              ],
+                              [
+                                costs ? "输出费用" : "输出 Tokens",
+                                row.output,
+                                row.outputKnown,
+                              ],
+                              [
+                                costs ? "合计" : "总 Tokens",
                                 row.input + row.output,
                                 row.inputKnown || row.outputKnown,
                               ],
@@ -319,14 +372,18 @@ export function UsageDashboard({
                                 <span>{String(label)}</span>
                                 <span className="font-mono font-medium">
                                   {available
-                                    ? number.format(Number(value))
-                                    : "未提供"}
+                                    ? displayValue(Number(value))
+                                    : costs
+                                      ? "暂无法估算"
+                                      : "未提供"}
                                 </span>
                               </div>
                             ))}
                             {row.missing > 0 && (
                               <p className="text-muted-foreground">
-                                部分用量未提供，仅合计已知用量
+                                {costs
+                                  ? "部分记录暂无法完整估算，仅合计可计算的费用"
+                                  : "部分用量未提供，仅合计已知用量"}
                               </p>
                             )}
                           </div>
