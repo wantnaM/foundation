@@ -189,7 +189,7 @@ export function RequestTable({
       emptyMessage={
         status || modelSearch
           ? "没有符合当前条件的请求"
-          : "暂无请求记录，运行 pnpm ai:chat 后点击刷新记录"
+          : "暂无请求记录"
       }
       toolbar={
         <>
